@@ -37,3 +37,9 @@ ger.gdp = ts(ger_gdp, start=c(1990,1), frequency=4)
 ts.plot(fra.gdp, type="l", main="France, Output",col="orange", ylab="GDP")
 ts.plot(usa.gdp, type="l", main="USA, Output",col="blue", ylab="GDP")
 ts.plot(ger.gdp, type="l", main="Germany, Output",col="green", ylab="GDP")
+
+#tout sur le même
+ts.plot(fra.gdp, usa.gdp, ger.gdp,
+        gpars=list(xlab="Years", ylab="%", lty=c(1:3), col=c("orange","blue","green")))
+legend("topright", legend = c("France output", "USA output", "Germany output"), col = c("orange","blue","green"), lty = 1, bty = "n", cex=0.6, xpd=TRUE)
+
