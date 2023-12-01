@@ -6,6 +6,7 @@ echo "# statapp-multiplicateurs" >> README.md
   git remote add origin https://github.com/egiraud7/statapp-multiplicateurs.git
   git push -u origin main
 
+
 #### Données de PIB (FRA)
 
 ## Importation des librairies
