@@ -20,3 +20,7 @@ for (i in 1:ncol(ts_d_US)) {
 }
 
 stationary_US <- sapply(ts_d_US, diff)
+
+for (i in 1:ncol(stationary_US)) {
+  ts.plot(stationary_US[, i], gpars = list(main = colnames(stationary_US)[i], ylab=""))
+}
