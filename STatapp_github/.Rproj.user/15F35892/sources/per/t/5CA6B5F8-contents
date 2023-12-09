@@ -1,0 +1,142 @@
+## Projet stat'app - Analyse des multiplicateurs budgétaires
+
+#Librairies
+if (!require("stats")) {install.packages("stats"); library("stats")} # Time series package
+if (!require("openxlsx")) {install.packages("openxlsx"); library("openxlsx")} # Input from and write to Excel
+if (!require("bibtex")) {install.packages("bibtex"); library("bibtex")} # Input from and write to Excel
+if (!require("vars")) {install.packages("vars"); library("vars")} # Input from and write to Excel
+if (!require("urca")) {install.packages("urca"); library("urca")} # Stationarity tests
+
+
+## Directory
+setwd("/Users/eleagiraud/Documents/ENSAE/Statapp")
+working.dir = '/Users/eleagiraud/Documents/ENSAE/Statapp'
+
+if ((working.dir=='')) {
+  stop("Must specify working.dir locations")
+}
+
+## Importation des données 
+d_US <- read.xlsx("2023-12-07_BDD_clean.xlsx", sheet="US_quarter", na.strings = ".", colNames=TRUE, rowNames=FALSE, detectDates = TRUE)
+d_France <- read.xlsx("2023-12-07_BDD_clean.xlsx", sheet="FR_quarter", na.strings = ".", colNames=TRUE, rowNames=FALSE, detectDates = TRUE)
+d_Germany <- read.xlsx("2023-12-07_BDD_clean.xlsx", sheet="GER_quarter", na.strings = ".", colNames=TRUE, rowNames=FALSE, detectDates = TRUE)
+
+## Représentation graphique des PIB réels des US, de la France et de l'Allemagne
+# Préparation des données
+n = nrow(d_US)
+
+us.rgdp.dollar = data.frame(us.rgdp=matrix(NA,ncol=1, nrow=n))
+fr.rgdp.euros = data.frame(fr.rgdp=matrix(NA,ncol=1, nrow=n))
+ger.rgdp.euros = data.frame(ger.rgdp=matrix(NA,ncol=1, nrow=n))
+
+for (i in 1:(n)){
+  us.rgdp.dollar[i,] = d_US$us.rgdp.dollar[i]
+  fr.rgdp.euros[i,] = d_France$fr.rgdp.euros[i]
+  ger.rgdp.euros[i,] = d_Germany$ger.rgdp.euros[i]
+}
+
+# Transformation en séries temporelles
+us.rgdp.dollar = ts(us.rgdp.dollar, start=c(1990,1), frequency=4)
+fr.rgdp.euros = ts(fr.rgdp.euros, start=c(1990,1), frequency=4)
+ger.rgdp.euros = ts(ger.rgdp.euros, start=c(1990,1), frequency=4)
+
+# 3 graphiques du PIB réel
+ts.plot(us.rgdp.dollar, type="l", main="US Real Gross Domestic Product",col="blue", ylab="RGDP (B$)")
+ts.plot(fr.rgdp.euros, type="l", main="France Real Gross Domestic Product",col="red", ylab="RGDP (M€)")
+ts.plot(ger.rgdp.euros, type="l", main="Germany Real Gross Domestic Product",col="orange", ylab="RGDP (M€)")
+
+# Sur le même graphique (ATTENTION - à changer en $ pour avoir les mêmes unités - à faire)
+ts.plot(us.rgdp.dollar, fr.rgdp.euros, ger.rgdp.euros, gpars=list(main="Real Gross Domestic Product", xlab="Years", ylab="$", lty=c(1:3), col=c("orange","blue","red")))
+legend("topright", legend = c("US RGDP", "France RGDP", "Germany RGDP"), col = c("orange","blue","red"), lty = 1, bty = "n", cex=0.6, xpd=TRUE)
+
+# Pour toutes les autres colonnes
+for (i in 1:ncol(ts_d_US)) {
+  ts.plot(ts_d_US[, i], gpars = list(main = colnames(ts_d_US)[i], ylab=""))
+}
+
+
+## Stationnarisation des séries temporelles de PIB réel
+
+stationary_US <- sapply(ts_d_US, diff)
+stationary_France <- sapply(ts_d_France, diff)
+stationary_Germany <- sapply(ts_d_Germany, diff)
+
+# Stationnarisation des séries de PIB réelles
+ts.plot(stationary_US[, 2], type="l", main="US Real Gross Domestic Product (stationary)",col="orange", ylab="RGDP (B$)")
+ts.plot(stationary_France[, 2], type="l", main="France Real Gross Domestic Product (stationary)",col="blue", ylab="RGDP (M€)")
+ts.plot(stationary_Germany[, 2], type="l", main="Germany Real Gross Domestic Product (stationary)",col="green", ylab="RGDP (M€)")
+
+# Stationnarisation des autres séries (à reprendre)
+for (i in 1:ncol(stationary_US)) {
+  ts.plot(stationary_US[, i], gpars = list(main = colnames(stationary_US)[i], ylab=""))
+}
+
+for (i in 1:ncol(stationary_France)) {
+  ts.plot(stationary_France[, i], gpars = list(main = colnames(stationary_US)[i], ylab=""))
+}
+
+for (i in 1:ncol(stationary_Germany)) {
+  ts.plot(stationary_Germany[, i], gpars = list(main = colnames(stationary_US)[i], ylab=""))
+}
+
+
+## Test de stationnarité KPSS
+
+time_series <- ts_d_US
+
+# Perform the PP test
+perform_kpss_test <- function(column) {
+  kpss_result <- kpss.test(column)
+  print(kpss_result)
+  cat("---------------------------------\n")
+  
+  if (kpss_result$p.value < 0.05) {
+    cat("Conclusion: Reject the null hypothesis. The time series may not be stationary.\n")
+  } else {
+    cat("Conclusion: Fail to reject the null hypothesis. The time series may  be stationary.\n")
+  }
+}
+
+# Apply the test to each column of the data_frame
+apply(time_series[, 2:ncol(time_series)], 2, perform_kpss_test)
+
+
+## Test de stationnarité Phillips-Perron
+
+# Perform the PP test
+perform_pp_test <- function(column) {
+  pp_result <- pp.test(column)
+  print(pp_result)
+  cat("---------------------------------\n")
+  
+  if (pp_result$p.value < 0.05) {
+    cat("Conclusion: Reject the null hypothesis. The time series may be stationary.\n")
+  } else {
+    cat("Conclusion: Fail to reject the null hypothesis. The time series may not be stationary.\n")
+  }
+}
+
+# Apply the test to each column of the data_frame
+apply(time_series[, 2:ncol(time_series)], 2, perform_pp_test)
+
+
+## Test de stationnarité ADF
+
+# Implement a function that realizes the ADF test and then reports reults
+perform_adf_test <- function(column, variable_name = "") {
+  result <- adf.test(column)
+  
+  cat("---------------------------------\n")
+  cat("Test Statistic:", result$statistic, "\n")
+  cat("P-value:", result$p.value, "\n")
+  cat("Critical Values:", paste(result$critical, collapse = ", "), "\n")
+  
+  if (result$p.value < 0.05) {
+    cat("Conclusion: Reject the null hypothesis. The time series is stationary.\n")
+  } else {
+    cat("Conclusion: Fail to reject the null hypothesis. The time series may not be stationary.\n")
+  }
+}
+
+# Apply the test to each column of the data_frame
+apply(time_series, 2, perform_adf_test)
