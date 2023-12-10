@@ -1,0 +1,26 @@
+{
+    "id": "6FC61800",
+    "path": "~/GitHub/statapp-multiplicateurs/plot_and_stationarize_national_files.R",
+    "project_path": "plot_and_stationarize_national_files.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1702220414387.0,
+    "source_on_save": false,
+    "relative_order": 7,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "13,54",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1701966791,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1701966791,
+    "read_only": false,
+    "read_only_alternatives": []
+}
